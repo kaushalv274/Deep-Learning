@@ -20,7 +20,8 @@ class TestFCReLU(object):
 	def __init__(self, dropout_p=0, dtype=np.float32, seed=None):
 		self.net = sequential(
 			########## TODO: ##########
-
+			fc(12, 10, name="fc1"),
+			relu(name="relu1")
 			########### END ###########
 		)
 
@@ -45,7 +46,10 @@ class SmallFullyConnectedNetwork(object):
 	def __init__(self, dropout_p=0, dtype=np.float32, seed=None):
 		self.net = sequential(
 			########## TODO: ##########
-
+			fc(4,30,name="fc1"),
+			relu(name="relu1"),
+			fc(30,7,name="fc2"),
+			relu(name="relu2")
 			########### END ###########
 		)
 

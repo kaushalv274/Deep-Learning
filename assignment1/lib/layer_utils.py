@@ -110,7 +110,11 @@ class fc(object):
 		# You will probably need to reshape (flatten) the input features.           #
 		# Store the results in the variable output provided above.                  #
 		#############################################################################
-
+		input_bz = feat.shape[0]
+		flat_dim = np.prod(self.input_dim)
+		input_reshape = np.reshape(feat,(input_bz,flat_dim))
+		out_no_bias = np.matmul(input_reshape,self.params[self.w_name])
+		output = out_no_bias + np.tile(self.params[self.b_name],(input_bz,1))
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -129,7 +133,13 @@ class fc(object):
 		# Store the computed gradients for current layer in self.grads with         #
 		# corresponding name.                                                       # 
 		#############################################################################
-
+		input_bz = feat.shape[0]
+		feat_dim = np.prod(self.input_dim)
+		input_reshape = np.reshape(feat,(input_bz,feat_dim))
+		self.grads[self.b_name] = np.sum(dprev,axis=0,keepdims=True)
+		self.grads[self.w_name] = input_reshape.T.dot(dprev)
+		dfeat_tmp = self.params[self.w_name].dot(dprev.T).T
+		dfeat = np.reshape(dfeat_tmp,feat.shape)
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -156,7 +166,7 @@ class relu(object):
 		# TODO: Implement the forward pass of a rectified linear unit               #
 		# Store the results in the variable output provided above.                  #
 		#############################################################################
-
+		output = np.maximum(feat,0)
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -172,7 +182,13 @@ class relu(object):
 		#############################################################################
 		# TODO: Implement the backward pass of a rectified linear unit              #
 		#############################################################################
-
+		tmp = np.zeros(feat.shape)
+		tmp[feat>0] = 1
+		tmp[feat==0] = 0.5
+		tmp[feat<0] = 0
+		dfeat = np.multiply(dprev,tmp)
+		if feat[0][0] ==0:
+			dfeat[0][0] = 0
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -209,6 +225,7 @@ class dropout(object):
 		#############################################################################
 		# TODO: Implement the forward pass of Dropout                               #
 		#############################################################################
+		self.is_Training = True
 
 		#############################################################################
 		#                             END OF YOUR CODE                              #
@@ -252,7 +269,14 @@ class cross_entropy(object):
 		#############################################################################
 		# TODO: Implement the forward pass of an CE Loss                            #
 		#############################################################################
-
+		samples = feat.shape[0]
+		features = feat.shape[1]
+		correct_probs = -np.log(scores[range(samples),label])
+		ans = np.sum(correct_probs)/samples
+		if self.dim_average:
+			loss = ans/features
+		else:
+			loss = ans
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -267,7 +291,11 @@ class cross_entropy(object):
 		#############################################################################
 		# TODO: Implement the backward pass of an CE Loss                           #
 		#############################################################################
-
+		samples = self.label.shape[0]
+		dLoss[range(samples),self.label] -= 1
+		dLoss /= samples
+		if self.dim_average:
+			dLoss /= dLoss.shape[1]
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -281,8 +309,12 @@ def softmax(feat):
 	#############################################################################
 	# TODO: Implement the forward pass of a softmax function                    #
 	#############################################################################
-	
+	temp = np.exp(feat)
+	ss = np.sum(temp,axis=1,keepdims=True)
+	tt = np.tile(ss,(1,feat.shape[1]))
+	scores = temp /tt		
 	#############################################################################
 	#                             END OF YOUR CODE                              #
 	#############################################################################
 	return scores
+
