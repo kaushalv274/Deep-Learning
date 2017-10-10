@@ -58,21 +58,22 @@ def compute_acc(model, data, labels, num_samples=None, batch_size=100):
 	N = data.shape[0]
 	if num_samples is not None and N > num_samples:
 		indices = np.random.choice(N, num_samples)
+		N = num_samples
 		data = data[indices]
 		labels = labels[indices]
 
-	num_batches = N / batch_size
+	num_batches = N // batch_size
 	if N % batch_size != 0:
 		num_batches += 1
 	preds = []
-	for i in xrange(num_batches):
+	for i in range(num_batches):
 		start = i * batch_size
 		end = (i + 1) * batch_size
-		output = model.forward(data, False)
+		output = model.forward(data[start:end], False)
 		scores = softmax(output)
 		pred = np.argmax(scores, axis=1)
 		preds.append(pred)
-	pred = np.hstack(preds)
+	preds = np.hstack(preds)
 	accuracy = np.mean(preds == labels)
 	return accuracy
 
@@ -133,7 +134,7 @@ def train_net(data, model, loss_func, optimizer, batch_size, max_epochs,
 	# Compute the maximum iterations and iterations per epoch
 	iters_per_epoch = max(data_train.shape[0] / batch_size, 1)
 	max_iters = iters_per_epoch  * max_epochs
-
+	kv = 0
 	# Start the training
 	for epoch in xrange(max_epochs):
 		# Compute the starting iteration and ending iteration for current epoch
@@ -153,8 +154,16 @@ def train_net(data, model, loss_func, optimizer, batch_size, max_epochs,
 			# TODO: Update the parameters by a forward pass for the network, a backward #
 			# pass to the network, and make a step for the optimizer                    #
 			#############################################################################
-			loss = None
-
+			#loss = None
+			output = model.forward(data_batch,True)
+			loss = loss_func.forward(output,labels_batch)
+			if kv==0:
+				kv += 1
+				print output
+				print loss
+			dLoss = loss_func.backward()
+			model.backward(dLoss)
+			optimizer.step()
 			#############################################################################
 			#                             END OF YOUR CODE                              #
 			#############################################################################
@@ -171,7 +180,8 @@ def train_net(data, model, loss_func, optimizer, batch_size, max_epochs,
 		# TODO: Compute the training accuracy and validation accuracy, store the    #
 		# results to train_acc_hist, and val_acc_hist respectively                  #
 		#############################################################################
-
+		train_acc = compute_acc(model, data_train, labels_train)
+		val_acc = compute_acc(model, data_val, labels_val)
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -183,7 +193,8 @@ def train_net(data, model, loss_func, optimizer, batch_size, max_epochs,
 			#############################################################################
 			# TODO: Save the optimal parameters to opt_params variable by name          #
 			#############################################################################
-			pass
+			opt_val_acc = val_acc
+			opt_params = model.net.params.copy()
 			#############################################################################
 			#                             END OF YOUR CODE                              #
 			#############################################################################
