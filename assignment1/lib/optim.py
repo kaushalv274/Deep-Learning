@@ -42,7 +42,14 @@ class SGDM(Optimizer):
 		#############################################################################
 		# TODO: Implement the SGD + Momentum                                        #
 		#############################################################################
-		pass
+		for layer in self.net.layers:
+			for n, v in layer.params.iteritems():
+				dv = layer.grads[n]
+				if n not in self.velocity:
+					self.velocity[n] = np.zeros(dv.shape)
+				tmp = ((self.momentum*self.velocity[n])-(self.lr*dv))
+				layer.params[n] += tmp
+				self.velocity[n] = tmp
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -60,7 +67,13 @@ class RMSProp(Optimizer):
 		#############################################################################
 		# TODO: Implement the RMSProp                                               #
 		#############################################################################
-		pass
+		for layer in self.net.layers:
+			for n, v in layer.params.iteritems():
+				dv = layer.grads[n]
+				if n not in self.cache:
+					self.cache[n] = np.zeros(dv.shape)
+				self.cache[n] = (self.decay*self.cache[n] + (1-self.decay)* dv**2)
+				layer.params[n] -= ((self.lr*dv)/(np.sqrt(self.cache[n]+self.eps)))
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################
@@ -80,7 +93,18 @@ class Adam(Optimizer):
 		#############################################################################
 		# TODO: Implement the Adam                                                  #
 		#############################################################################
-		pass
+		self.t += 1
+		for layer in self.net.layers:
+			for n, v in layer.params.iteritems():
+				dv = layer.grads[n]
+				if n not in self.mt:
+					self.mt[n] = np.zeros(dv.shape)
+					self.vt[n] = np.zeros(dv.shape)
+				self.mt[n] = ((self.beta1*self.mt[n]) + ((1-self.beta1) * dv))
+				self.vt[n] = ((self.beta2*self.vt[n]) + ((1-self.beta2) * dv**2))
+				mtt = (self.mt[n] / (1-self.beta1**self.t))
+				vtt = (self.vt[n]/ (1-self.beta2**self.t))
+				layer.params[n] -= ((self.lr*mtt)/(np.sqrt(vtt)+self.eps))
 		#############################################################################
 		#                             END OF YOUR CODE                              #
 		#############################################################################

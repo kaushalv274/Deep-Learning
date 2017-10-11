@@ -136,7 +136,7 @@ class fc(object):
 		input_bz = feat.shape[0]
 		feat_dim = np.prod(self.input_dim)
 		input_reshape = np.reshape(feat,(input_bz,feat_dim))
-		self.grads[self.b_name] = np.sum(dprev,axis=0,keepdims=True)
+		self.grads[self.b_name] = np.sum(dprev,axis=0)
 		self.grads[self.w_name] = input_reshape.T.dot(dprev)
 		dfeat_tmp = self.params[self.w_name].dot(dprev.T).T
 		dfeat = np.reshape(dfeat_tmp,feat.shape)

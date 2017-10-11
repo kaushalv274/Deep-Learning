@@ -159,8 +159,6 @@ def train_net(data, model, loss_func, optimizer, batch_size, max_epochs,
 			loss = loss_func.forward(output,labels_batch)
 			if kv==0:
 				kv += 1
-				print output
-				print loss
 			dLoss = loss_func.backward()
 			model.backward(dLoss)
 			optimizer.step()
