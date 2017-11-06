@@ -52,7 +52,7 @@ class LanguageModelRNN(object):
 
 		########## TODO: ##########
 		self.preprocess = word_embedding(word_size, word_vec_dim, name="WE")
-		self.postprocess = temporal_fc(word_vec_dim, word_size, init_scale=0.02, name='TFC')
+		self.postprocess = temporal_fc(hidden_dim, word_size, init_scale=0.02, name='TFC')
 		if cell_type in 'rnn':
 			self.rnn = VanillaRNN(word_vec_dim, hidden_dim)
 		if cell_type in 'lstm':
