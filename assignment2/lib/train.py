@@ -159,7 +159,11 @@ def train_net(data, model, loss_func, optimizer, timesteps, batch_size, max_epoc
 			# TODO: Update the parameters by a forward pass for the network, a backward #
 			# pass to the network, and make a step for the optimizer					#
 			#############################################################################
-						
+			pred = model.forward(data_batch, h0)
+			loss = loss_func.forward(pred, labels_batch, mask)
+			dLoss = loss_func.backward()
+			dX, dh0 = model.backward(dLoss)
+			optimizer.step()
 			#############################################################################
 			#							 END OF YOUR CODE							  #
 			#############################################################################

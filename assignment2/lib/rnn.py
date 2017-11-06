@@ -12,7 +12,7 @@ class TestRNN(object):
 			self.rnn = VanillaRNN(input_dim, hidden_dim)
 		########## TODO: ##########
 		if cell_type in 'lstm':
-			self.rnn = None
+			self.rnn = LSTM(input_dim, hidden_dim)
 		########### END ###########
 		
 		self.gather_params()
@@ -51,12 +51,12 @@ class LanguageModelRNN(object):
 		self.cell_type = cell_type
 
 		########## TODO: ##########
-		self.preprocess = None
-		self.postprocess = None
+		self.preprocess = word_embedding(word_size, word_vec_dim, name="WE")
+		self.postprocess = temporal_fc(word_vec_dim, word_size, init_scale=0.02, name='TFC')
 		if cell_type in 'rnn':
-			self.rnn = None
+			self.rnn = VanillaRNN(word_vec_dim, hidden_dim)
 		if cell_type in 'lstm':
-			self.rnn = None
+			self.rnn = LSTM(word_vec_dim, hidden_dim)
 		########### END ###########
 		
 		self.gather_params()
